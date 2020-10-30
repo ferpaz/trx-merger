@@ -19,7 +19,7 @@ namespace TRX_Merger.Utilities
                   new XElement("TestRun",
                         new XAttribute("id", testRun.Id),
                         new XAttribute("name", testRun.Name),
-                        new XAttribute("runUser", testRun.RunUser),
+                        new XAttribute("runUser", "DummyRunUser"),
                         new XElement("Times",
                             new XAttribute("creation", testRun.Times.Creation),
                             new XAttribute("queuing", testRun.Times.Queuing),
@@ -52,7 +52,7 @@ namespace TRX_Merger.Utilities
                                 td => new XElement("UnitTest",
                                          new XAttribute("id", td.Id),
                                          new XAttribute("name", td.Name),
-                                         new XAttribute("storage", td.Storage),
+                                         new XAttribute("storage", "DummyStorage"),
                                          new XElement("Execution",
                                             new XAttribute("id", td.Execution.Id)),
                                          new XElement("TestMethod",
@@ -125,7 +125,7 @@ namespace TRX_Merger.Utilities
 
                 testRun.Id = run.Attribute("id").Value;
                 testRun.Name = run.Attribute("name").Value;
-                testRun.RunUser = run.Attribute("runUser").Value;
+                // testRun.RunUser = run.Attribute("runUser").Value;
 
                 testRun.Times = DeserializeTimes(doc.Descendants(ns + "Times").FirstOrDefault());
                 testRun.Results = DeserializeResults(doc.Descendants(ns + "UnitTestResult"));

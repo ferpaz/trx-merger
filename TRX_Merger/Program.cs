@@ -73,6 +73,7 @@ namespace TRX_Merger
                 }
                 catch (Exception ex)
                 {
+
                     while (ex.InnerException != null)
                         ex = ex.InnerException;
 
@@ -119,6 +120,7 @@ namespace TRX_Merger
                 }
                 catch (Exception ex)
                 {
+                  Console.WriteLine(ex);
                     while (ex.InnerException != null)
                         ex = ex.InnerException;
 
@@ -138,11 +140,11 @@ PARAMETERS:
 
 /trx - parameter that determines which trx files will be merged. REQUIRED PARAMETER
 	This parameter will accept one of the following:
-		- file(s) name: looks for trx files in the current directory.File extension is required 
+		- file(s) name: looks for trx files in the current directory.File extension is required
 			example: /trx:testResults1.trx,testResults2.trx,testResults3.trx
-		- file(s) path: full path to trx files.File extension is required 
+		- file(s) path: full path to trx files.File extension is required
 			example: /trx:c:\TestResults\testResults1.trx,c:\TestResults\testResults2.trx,c:\TestResults\testResults3.trx
-		- directory(s): directory containing trx files. it gets all trx files in the directory	
+		- directory(s): directory containing trx files. it gets all trx files in the directory
 			example: /trx:c:\TestResults,c:\TestResults1
 		- empty: gets all trx files in the current directory
 			example: /trx
@@ -159,7 +161,7 @@ PARAMETERS:
     example: /trx:c:\TestResults,c:\TestResults1\testResults2.trx /r /output:combinedTestResults.trx
 
 /report - generates a html report from a trx file. REQUIRED if one trx is specified in /trx parameter and OPTIONAL otherwise.\n If one trx is passed to the utility, the report is for it, otherwise, the report is generated for the /output result
-    - fill path to where the report should be saved. including the name of the file and extension. 
+    - fill path to where the report should be saved. including the name of the file and extension.
     example /report:c:\Tests\report.html
 
 /screenshots - path to a folder which contains screenshots corresponding to failing tests. OPTIONAL PARAMETER
