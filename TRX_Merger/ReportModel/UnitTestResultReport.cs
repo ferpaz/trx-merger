@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using TRX_Merger.TrxModel;
 
 namespace TRX_Merger.ReportModel
@@ -18,39 +20,38 @@ namespace TRX_Merger.ReportModel
                     || Result.Output.StdOut.Contains("-> skipped"))
                 {
                     //set cucumber output
-                    cucumberStdOut = new List<KeyValuePair<string, string>>();
-                    var rows = Result.Output.StdOut.Split(new char[] { '\n' });
+                    var rows = Result.Output.StdOut.Split(Environment.NewLine);
                     for (int i = 1; i < rows.Length; i++)
                     {
                         if (rows[i].StartsWith("-> done"))
                         {
-                            cucumberStdOut.Add(new KeyValuePair<string, string>(rows[i - 1], "success"));
-                            cucumberStdOut.Add(new KeyValuePair<string, string>(rows[i], "success"));
+                            CucumberStdOut.Add(new KeyValuePair<string, string>(rows[i - 1], "success"));
+                            CucumberStdOut.Add(new KeyValuePair<string, string>(rows[i], "success"));
                         }
 
 
                         else if (rows[i].StartsWith("-> error"))
                         {
-                            cucumberStdOut.Add(new KeyValuePair<string, string>(rows[i - 1], "danger"));
-                            cucumberStdOut.Add(new KeyValuePair<string, string>(rows[i], "danger"));
+                            CucumberStdOut.Add(new KeyValuePair<string, string>(rows[i - 1], "danger"));
+                            CucumberStdOut.Add(new KeyValuePair<string, string>(rows[i], "danger"));
                         }
                         else if (rows[i].StartsWith("-> skipped"))
                         {
-                            cucumberStdOut.Add(new KeyValuePair<string, string>(rows[i - 1], "warning"));
-                            cucumberStdOut.Add(new KeyValuePair<string, string>(rows[i], "warning"));
+                            CucumberStdOut.Add(new KeyValuePair<string, string>(rows[i - 1], "warning"));
+                            CucumberStdOut.Add(new KeyValuePair<string, string>(rows[i], "warning"));
                         }
                     }
                 }
                 else
                 {
                     //set standard output
-                    StdOutRows = Result.Output.StdOut.Split(new char[] { '\n' }).ToList();
+                    StdOutRows = Result.Output.StdOut.Split(Environment.NewLine).ToList();
                 }
             }
 
             if (!string.IsNullOrEmpty(Result.Output.StdErr))
             {
-                StdErrRows = Result.Output.StdErr.Split(new char[] { '\n' }).ToList();
+                StdErrRows = Result.Output.StdErr.Split(Environment.NewLine).ToList();
             }
 
             if (result.Output.ErrorInfo != null)
@@ -58,13 +59,13 @@ namespace TRX_Merger.ReportModel
                 if (!string.IsNullOrEmpty(Result.Output.ErrorInfo.Message))
                 {
                     //set MessageRows
-                    ErrorMessageRows = Result.Output.ErrorInfo.Message.Split(new char[] { '\n' }).ToList();
+                    ErrorMessageRows = Result.Output.ErrorInfo.Message.Split(Environment.NewLine).ToList();
                 }
 
                 if (!string.IsNullOrEmpty(Result.Output.ErrorInfo.StackTrace))
                 {
                     //set StackTraceRows
-                    ErrorStackTraceRows = Result.Output.ErrorInfo.StackTrace.Split(new char[] { '\n' }).ToList();
+                    ErrorStackTraceRows = Result.Output.ErrorInfo.StackTrace.Split(Environment.NewLine).ToList();
                 }
             }
 
@@ -76,64 +77,39 @@ namespace TRX_Merger.ReportModel
         {
             get
             {
-                var strings = ClassName.Split(new char[] { '.' }).ToList();
+                var strings = ClassName.Split('.').ToList();
                 strings.Add(Result.TestName);
-                string id = "";
-                foreach (var s in strings)
-                    id += s;
 
-                return id;
+                var id = new StringBuilder();
+                strings.ForEach(s => id.Append(s));
+                return id.ToString();
             }
         }
 
-        private List<KeyValuePair<string, string>> cucumberStdOut;
-        public List<KeyValuePair<string, string>> CucumberStdOut
-        {
-            get
-            {
-                return cucumberStdOut;
-            }
-        }
+        public List<KeyValuePair<string, string>> CucumberStdOut { get; } = new();
 
         public List<string> StdOutRows { get; set; }
 
         public List<string> StdErrRows { get; set; }
 
         public List<string> ErrorMessageRows { get; set; }
+
         public List<string> ErrorStackTraceRows { get; set; }
 
-        public string AsJson()
-        {
-            return System.Text.Json.JsonSerializer.Serialize(this);
-        }
+        public string AsJson() => JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
 
-        public string FormattedStartTime
-        {
-            get
-            {
-                return DateTime.Parse(Result.StartTime).ToString("MM.dd.yyyy hh\\:mm\\:ss");
-            }
-        }
+        public string FormattedStartTime => DateTime.Parse(Result.StartTime).ToString("G");
 
-        public string FormattedEndTime
-        {
-            get
-            {
-                return DateTime.Parse(Result.EndTime).ToString("MM.dd.yyyy hh\\:mm\\:ss");
-            }
-        }
+        public string FormattedEndTime => DateTime.Parse(Result.EndTime).ToString("G");
 
-        public string FormattedDuration
-        {
-            get
-            {
-                return TimeSpan.Parse(Result.Duration).TotalSeconds.ToString("n2") + " sec.";
-            }
-        }
+        public string FormattedDuration => TimeSpan.Parse(Result.Duration).TotalSeconds.ToString("n2") + " sec.";
 
         public UnitTestResult Result { get; set; }
+
         public string Dll { get; set; }
+
         public string ClassName { get; set; }
+
         public string ErrorImage { get; set; }
     }
 }

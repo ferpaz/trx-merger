@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 namespace TRX_Merger.ReportModel
 {
@@ -23,7 +22,10 @@ namespace TRX_Merger.ReportModel
 
             Timeout = tests.Count(t => t.Result.Outcome == "Timeout");
 
+            NotExecuted = tests.Count(t => t.Result.Outcome == "NotExecuted");
+
             var durations = tests.Select(t => TimeSpan.Parse(t.Result.Duration)).ToList<TimeSpan>();
+            
             Duration = new TimeSpan();
             durations.ForEach(d => Duration += d);
 
@@ -31,13 +33,8 @@ namespace TRX_Merger.ReportModel
         }
 
         public string TestClassName { get; set; }
-        public string FriendlyTestClassName
-        {
-            get
-            {
-                return TestClassName.Split(new char[] { '.' }).Last();
-            }         
-        }
+
+        public string FriendlyTestClassName => TestClassName.Split('.').Last();
 
         public List<UnitTestResultReport> Tests { get; set; }
 
@@ -50,6 +47,8 @@ namespace TRX_Merger.ReportModel
         public int Failed { get; set; }
 
         public int Timeout { get; set; }
+
+        public int NotExecuted { get; set; }
         
         public int Aborted { get; set; }
 

@@ -2,20 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TRX_Merger.ReportGenerator;
 
 namespace TRX_Merger
 {
-
-    //Change name to trx-util
-    public class Program
+    public static class Program
     {
         public static int Main(string[] args)
         {
-
-
             if (args.Length == 0
                 || args.Contains("/h")
                 || args.Contains("/help"))
@@ -24,13 +18,13 @@ namespace TRX_Merger
                 return 1;
             }
 
-            if (args.Where(a => a.StartsWith("/trx")).FirstOrDefault() == null)
+            if (args.FirstOrDefault(a => a.StartsWith("/trx")) == null)
             {
                 Console.WriteLine("/trx parameter is required");
                 return 1;
             }
 
-            string trxArg = args.Where(a => a.StartsWith("/trx")).FirstOrDefault();
+            string trxArg = args.FirstOrDefault(a => a.StartsWith("/trx"));
             var trxFiles = ResolveTrxFilePaths(trxArg, args.Contains("/r"));
             if (trxFiles.Count == 0)
             {
@@ -46,50 +40,58 @@ namespace TRX_Merger
                     return 1;
                 }
 
-                if (args.Where(a => a.StartsWith("/report")).FirstOrDefault() == null)
+                if (args.FirstOrDefault(a => a.StartsWith("/report")) == null)
                 {
                     Console.WriteLine("Error: Only one trx file has been passed and there is no /report parameter. When having only one trx in /trx argument, /report parameter is required.");
                     return 1;
                 }
 
-                if (args.Where(a => a.StartsWith("/output")).FirstOrDefault() != null)
+                if (args.FirstOrDefault(a => a.StartsWith("/output")) != null)
                 {
                     Console.WriteLine("Error: /output parameter is not allowed when having only one trx in /trx argument!.");
                     return 1;
                 }
 
-                string reportOutput = ResolveReportLocation(args.Where(a => a.StartsWith("/report")).FirstOrDefault());
-                if (reportOutput.StartsWith("Error: "))
+                string reportParam = args.FirstOrDefault(a => a.StartsWith("/report"));
+                if (reportParam != null)
                 {
-                    Console.WriteLine(trxFiles[0]);
-                    return 1;
+                    string reportOutput = ResolveReportLocation(reportParam);
+                    if (reportOutput.StartsWith("Error: "))
+                    {
+                        Console.WriteLine(trxFiles[0]);
+                        return 1;
+                    }
+
+                    string screenshotLocation = ResolveScreenshotLocation(args.FirstOrDefault(a => a.StartsWith("/screenshots")));
+                    string reportTitle = ResolveReportTitle(args.FirstOrDefault(a => a.StartsWith("/reportTitle")));
+                    try
+                    {
+                        TrxReportGenerator.GenerateReport(trxFiles[0], reportOutput, screenshotLocation, reportTitle);
+                    }
+                    catch (Exception ex)
+                    {
+                        while (ex.InnerException != null)
+                            ex = ex.InnerException;
+
+                        Console.WriteLine("Error: " + ex.Message);
+                        return 1;
+                    }
                 }
-
-                string screenshotLocation = ResolveScreenshotLocation(args.Where(a => a.StartsWith("/screenshots")).FirstOrDefault());
-                string reportTitle = ResolveReportTitle(args.Where(a => a.StartsWith("/reportTitle")).FirstOrDefault());
-                try
+                else
                 {
-                    TrxReportGenerator.GenerateReport(trxFiles[0], reportOutput, screenshotLocation, reportTitle);
-                }
-                catch (Exception ex)
-                {
-
-                    while (ex.InnerException != null)
-                        ex = ex.InnerException;
-
-                    Console.WriteLine("Error: " + ex.Message);
-                    return 1;
+                    // Report parameter is not supplied, a summary is printed in console
+                    return TrxReportGenerator.GenerateSummaryOnConsole(trxFiles[0]);
                 }
             }
             else
             {
-                if (args.Where(a => a.StartsWith("/output")).FirstOrDefault() == null)
+                if (args.FirstOrDefault(a => a.StartsWith("/output")) == null)
                 {
                     Console.WriteLine("/output parameter is required, when there are multiple trx files in /trx argument");
                     return 1;
                 }
 
-                string outputParam = ResolveOutputFileName(args.Where(a => a.StartsWith("/output")).FirstOrDefault());
+                string outputParam = ResolveOutputFileName(args.FirstOrDefault(a => a.StartsWith("/output")));
                 if (outputParam.StartsWith("Error: "))
                 {
                     Console.WriteLine(outputParam);
@@ -103,9 +105,12 @@ namespace TRX_Merger
                 {
                     var combinedTestRun = TestRunMerger.MergeTRXsAndSave(trxFiles, outputParam);
 
-                    string reportOutput = ResolveReportLocation(args.Where(a => a.StartsWith("/report")).FirstOrDefault());
+                    string reportOutput = ResolveReportLocation(args.FirstOrDefault(a => a.StartsWith("/report")));
                     if (reportOutput == null)
-                        return 0;
+                    {
+                        // Report parameter is not supplied, a summary is printed in console
+                        return TrxReportGenerator.GenerateSummaryOnConsole(combinedTestRun);
+                    }
 
                     if (reportOutput.StartsWith("Error: "))
                     {
@@ -113,8 +118,8 @@ namespace TRX_Merger
                         return 1;
                     }
 
-                    string screenshotLocation = ResolveScreenshotLocation(args.Where(a => a.StartsWith("/screenshots")).FirstOrDefault());
-                    string reportTitle = ResolveReportTitle(args.Where(a => a.StartsWith("/reportTitle", StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault());
+                    string screenshotLocation = ResolveScreenshotLocation(args.FirstOrDefault(a => a.StartsWith("/screenshots")));
+                    string reportTitle = ResolveReportTitle(args.FirstOrDefault(a => a.StartsWith("/reportTitle", StringComparison.CurrentCultureIgnoreCase)));
 
                     TrxReportGenerator.GenerateReport(combinedTestRun, reportOutput, screenshotLocation, reportTitle);
                 }
@@ -177,7 +182,7 @@ PARAMETERS:
                 || !outputParam.EndsWith(".trx"))
                 return "Error: /output parameter is in the incorrect format. Expected /output:<file name | directory and file name>. Execute /help for more information";
 
-            return outputParam.Substring(8, outputParam.Length - 8);
+            return outputParam[8..];
         }
 
         private static string ResolveReportLocation(string reportParam)
@@ -191,7 +196,7 @@ PARAMETERS:
                 || !reportParam.EndsWith(".html"))
                 return "Error: /report parameter is in the correct format. Expected /report:<file name | directory and file name>. Execute /help for more information";
 
-            return reportParam.Substring(8, reportParam.Length - 8);
+            return reportParam[8..];
         }
 
         private static string ResolveScreenshotLocation(string screenshots)
@@ -204,7 +209,7 @@ PARAMETERS:
             if (splitScreenshots.Length == 1)
                 return "Error: /screenshots parameter is in the correct format. Expected /screenshots:<directory name>. Execute /help for more information";
 
-            var screenshotsLocation = screenshots.Substring(13, screenshots.Length - 13);
+            var screenshotsLocation = screenshots[13..];
             if (!Directory.Exists(screenshotsLocation))
                 return "Error: Folder: " + screenshotsLocation + "does not exists";
 
@@ -221,23 +226,21 @@ PARAMETERS:
             if (splitScreenshots.Length == 1)
                 return "Error: /reportTitle parameter is in the correct format. Expected /reportTitle:<title>. Execute /help for more information";
 
-            var screenshotsLocation = reportTitle.Substring("/reportTitle".Length + 1);
+            var screenshotsLocation = reportTitle[("/reportTitle".Length + 1)..];
 
             return screenshotsLocation;
         }
 
         private static List<string> ResolveTrxFilePaths(string trxParams, bool recursive)
         {
-            List<string> paths = new List<string>();
-
-            var splitTrx = trxParams.Split(new char[] { ':' });
-
             var searchOpts = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-
-            if (splitTrx.Length == 1)
+            
+            if (trxParams == "/trx")
                 return Directory.GetFiles(Directory.GetCurrentDirectory(), "*.trx", searchOpts).ToList();
 
-            var args = trxParams.Substring(5, trxParams.Length - 5).Split(new char[] { ',' }).ToList();
+            List<string> paths = new();
+
+            var args = trxParams[5..].Split(',').ToList();
 
             foreach (var a in args)
             {
@@ -245,17 +248,13 @@ PARAMETERS:
                 bool isDir = Directory.Exists(a);
 
                 if (!isTrxFile && !isDir)
-                    return new List<string>
-                    {
-                        string.Format("Error: {0} is not a trx file or directory", a)
-                    };
+                    return new List<string> { $"Error: {a} is not a trx file or directory" };
 
                 if (isTrxFile)
                     paths.Add(a);
 
                 if (isDir)
                     paths.AddRange(Directory.GetFiles(a, "*.trx", searchOpts).ToList());
-
             }
 
             return paths;

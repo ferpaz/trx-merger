@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TRX_Merger.TrxModel;
 using TRX_Merger.Utilities;
 
@@ -10,26 +8,25 @@ namespace TRX_Merger
 {
     public static class TestRunMerger
     {
-
         public static TestRun MergeTRXsAndSave(List<string> trxFiles, string outputFile)
         {
             Console.WriteLine("Deserializing trx files:");
-            List<TestRun> runs = new List<TestRun>();
+            List<TestRun> runs = new();
             foreach (var trx in trxFiles)
             {
-                Console.WriteLine(trx);
-                runs.Add(TRXSerializationUtils.DeserializeTRX(trx));
+                Console.WriteLine($"  {trx}");
+                runs.Add(TrxSerializationUtils.DeserializeTRX(trx));
             }
 
             Console.WriteLine("Combining deserialized trx files...");
             var combinedTestRun = MergeTestRuns(runs);
 
             Console.WriteLine("Saving result...");
-            var savedFile = TRXSerializationUtils.SerializeAndSaveTestRun(combinedTestRun, outputFile);
+            var savedFile = TrxSerializationUtils.SerializeAndSaveTestRun(combinedTestRun, outputFile);
 
             Console.WriteLine("Operation completed:");
-            Console.WriteLine("\tCombined trx files: " + trxFiles.Count);
-            Console.WriteLine("\tResult trx file: " + savedFile);
+            Console.WriteLine("  Combined trx files: " + trxFiles.Count);
+            Console.WriteLine("  Result trx file: " + savedFile);
 
             return combinedTestRun;
         }
@@ -45,14 +42,10 @@ namespace TRX_Merger
             string endString = "";
             DateTime endDate = DateTime.MinValue;
 
-
-
-
-            List<UnitTestResult> allResults = new List<UnitTestResult>();
-            List<UnitTest> allTestDefinitions = new List<UnitTest>();
-            List<TestEntry> allTestEntries = new List<TestEntry>();
-            List<TestList> allTestLists = new List<TestList>();
-
+            List<UnitTestResult> allResults = new();
+            List<UnitTest> allTestDefinitions = new();
+            List<TestEntry> allTestEntries = new();
+            List<TestList> allTestLists = new();
 
             var resultSummary = new ResultSummary
             {
@@ -82,8 +75,7 @@ namespace TRX_Merger
                     endString = tr.Times.Finish;
                 }
 
-
-                resultSummaryPassed &= tr.ResultSummary.Outcome == "Passed";
+                resultSummaryPassed &= (tr.ResultSummary.Outcome == "Passed" || tr.ResultSummary.Outcome == "NotExecuted");
                 resultSummary.RunInfos = resultSummary.RunInfos.Concat(tr.ResultSummary.RunInfos).ToList();
                 resultSummary.Counters.Aborted += tr.ResultSummary.Counters.Aborted;
                 resultSummary.Counters.Completed += tr.ResultSummary.Counters.Completed;
@@ -100,11 +92,9 @@ namespace TRX_Merger
                 resultSummary.Counters.Timeout += tr.ResultSummary.Counters.Timeout;
                 resultSummary.Counters.Total += tr.ResultSummary.Counters.Total;
                 resultSummary.Counters.Warning += tr.ResultSummary.Counters.Warning;
-
             }
 
             resultSummary.Outcome = resultSummaryPassed ? "Passed" : "Failed";
-
 
             return new TestRun
             {
@@ -124,7 +114,6 @@ namespace TRX_Merger
                 TestLists = allTestLists,
                 ResultSummary = resultSummary,
             };
-        } 
- 
+        }
     }
 }

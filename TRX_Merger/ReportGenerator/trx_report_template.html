@@ -200,10 +200,10 @@
                         <tr class="danger">
                             <td id="@String.Format("err{0}",test.TestId)" style="display:none">@test.AsJson()</td>
                             <td>@test.Result.TestName</td>
-                            <td>@DateTime.Parse(test.Result.StartTime).ToString("MM.dd.yyyy hh\\:mm\\:ss")</td>
+                            <td>@DateTime.Parse(test.Result.StartTime).ToString("G")</td>
                             <td>@TimeSpan.Parse(test.Result.Duration).TotalSeconds.ToString("n2") sec.</td>
                             <td>FAILED</td>
-                            <td><a style="cursor: pointer" onclick="showTestDetails(@String.Format("err{0}",test.TestId))">Details</a></td>
+                            <td><a style="cursor: pointer" onclick="showTestDetails(@string.Format("err{0}",test.TestId))">Details</a></td>
 
                         </tr>
                         }
@@ -268,7 +268,7 @@
                             <tr class="@rowClass">
                                 <td id="@test.TestId" style="display:none">@test.AsJson()</td>
                                 <td>@test.Result.TestName</td>
-                                <td>@DateTime.Parse(test.Result.StartTime).ToString("MM.dd.yyyy hh\\:mm\\:ss")</td>
+                                <td>@DateTime.Parse(test.Result.StartTime).ToString("G")</td>
                                 <td>@TimeSpan.Parse(test.Result.Duration).TotalSeconds.ToString("n2") sec.</td>
                                 <td>@test.Result.Outcome</td>
                                 <td><a style="cursor: pointer" onclick="showTestDetails(@test.TestId)">Details</a></td>

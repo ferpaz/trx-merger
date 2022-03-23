@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TRX_Merger": {
+      "commandName": "Project",
+      "commandLineArgs": "/trx:C:\\vh4\\TestResults /output:C:\\vh4\\TestResults\\combinedTestResults.trx"
+    }
+  }
+}

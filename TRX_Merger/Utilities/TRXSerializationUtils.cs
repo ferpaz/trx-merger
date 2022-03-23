@@ -6,7 +6,7 @@ using TRX_Merger.TrxModel;
 
 namespace TRX_Merger.Utilities
 {
-    public static class TRXSerializationUtils
+    public static class TrxSerializationUtils
     {
         private static string ns = "{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}";
 
@@ -102,8 +102,10 @@ namespace TRX_Merger.Utilities
 
             doc.Root.SetDefaultXmlNamespace("http://microsoft.com/schemas/VisualStudio/TeamTest/2010");
 
-            if (File.Exists(targetPath))
-                File.Delete(targetPath);
+            var folder = new FileInfo(targetPath).DirectoryName;
+            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+            if (File.Exists(targetPath)) File.Delete(targetPath);
 
             doc.Save(targetPath);
 
